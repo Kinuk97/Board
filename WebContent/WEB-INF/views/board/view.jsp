@@ -11,24 +11,15 @@
 <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <!-- 합쳐지고 최소화된 최신 CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
 <script type="text/javascript">
-$(document).ready(function() {
-	$(".boardLine").on("click", function() {
-		location.href = "/board/view?boardno=" + $(this).find("td").eq(0).text();
-	});
-});
 </script>
-<style type="text/css">
-.boardLine {
-	cursor: default;
-}
-</style>
 </head>
 <body>
-	<h1 style="text-align: center;">게시글 리스트</h1>
+	<h1 style="text-align: center;">게시글 디테일</h1>
 	<hr>
 	<div class="container">
-		<table class="table table-hover" style="margin: 0 auto;">
+		<table class="table" style="margin: 0 auto;">
 			<thead>
 				<tr>
 					<td>게시글번호</td>
@@ -38,15 +29,18 @@ $(document).ready(function() {
 					<td>작성일</td>
 				</tr>
 			</thead>
-			<c:forEach items="${boardList }" var="board">
-				<tr class="boardLine">
-					<td>${board.boardno }</td>
-					<td>${board.title }</td>
-					<td>${board.id }</td>
-					<td>${board.hit }</td>
-					<td>${board.writtendate }</td>
-				</tr>
-			</c:forEach>
+			<tr>
+				<td>${board.boardno }</td>
+				<td>${board.title }</td>
+				<td>${board.id }</td>
+				<td>${board.hit }</td>
+				<td>${board.writtendate }</td>
+			</tr>
+			<tr>
+				<td colspan="5">
+					<div class="col-md-12" style="border: 1px solid #CCC; height: 500px;">${board.content }</div>
+				</td>
+			</tr>
 		</table>
 	</div>
 </body>
