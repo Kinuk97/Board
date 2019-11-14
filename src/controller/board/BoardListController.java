@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import service.face.BoardService;
 import service.impl.BoardServiceImpl;
+import util.Paging;
 
 @WebServlet("/board/list")
 public class BoardListController extends HttpServlet {
@@ -19,7 +20,13 @@ public class BoardListController extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.setAttribute("boardList", boardService.getList());
+		// 요청 파라미터에서 curPage를 구하고 Paging 객체 반환
+		Paging paging = boardService.getPaging(req);
+		
+		// Paging 객체를 MODEL 값으로 지정
+		req.setAttribute("paging", paging);
+		
+		req.setAttribute("boardList", boardService.getList(paging));
 		
 		req.getRequestDispatcher("/WEB-INF/views/board/list.jsp").forward(req, resp);
 	}
