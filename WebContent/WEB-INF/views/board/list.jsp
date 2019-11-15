@@ -55,7 +55,6 @@ $(document).ready(function() {
 			</c:forEach>
 		</table>
 		<jsp:include page="/WEB-INF/views/layout/paging.jsp"></jsp:include>
-		
 	</div>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp"/>
