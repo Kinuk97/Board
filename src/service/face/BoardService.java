@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import dto.Board;
+import dto.BoardFile;
 import util.Paging;
 
 public interface BoardService {
@@ -35,4 +36,13 @@ public interface BoardService {
 
 	public Board getBoardno(HttpServletRequest req);
 	public Board view(Board board);
+	
+	
+	public void write(Board board);
+//	public void write(HttpServletRequest req);
+	public void write(HttpServletRequest req);
+	
+	
+	public BoardFile getFile(Board board);
+	public BoardFile getFile(BoardFile boardFile);
 }

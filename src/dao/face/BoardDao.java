@@ -3,6 +3,7 @@ package dao.face;
 import java.util.List;
 
 import dto.Board;
+import dto.BoardFile;
 import util.Paging;
 
 public interface BoardDao {
@@ -25,4 +26,13 @@ public interface BoardDao {
 	 * @return - 총 게시글 수
 	 */
 	public int selectCntAll();
+	
+	public int selectBoardno();
+	
+	public void insert(Board board);
+	
+	public void insertFile(BoardFile boardFile);
+	
+	public BoardFile selectFile(Board board);
+	public BoardFile selectFile(BoardFile boardFile);
 }

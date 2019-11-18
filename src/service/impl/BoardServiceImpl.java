@@ -1,13 +1,26 @@
 package service.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import dao.face.BoardDao;
 import dao.impl.BoardDaoImpl;
 import dto.Board;
+import dto.BoardFile;
 import service.face.BoardService;
 import util.Paging;
 
@@ -51,13 +64,13 @@ public class BoardServiceImpl implements BoardService {
 		if (param != null && !"".equals(param)) {
 			curPage = Integer.parseInt(param);
 		}
-		
+
 		// Board TB와 curPage 값을 이용한 Paging 객체를 생성하고 반환
 		int totalCount = boardDao.selectCntAll();
-		
+
 		// Paging 객체 생성
 		Paging paging = new Paging(totalCount, curPage);
-		
+
 		return paging;
 	}
 
@@ -66,5 +79,224 @@ public class BoardServiceImpl implements BoardService {
 		return boardDao.selectAll(paging);
 	}
 
+	@Override
+	public void write(Board board) {
+		board.setBoardno(boardDao.selectBoardno());
+		boardDao.insert(board);
+	}
+
+	@Override
+	public void write(HttpServletRequest req) {
+		// 1. 파일업로드 형태의 데이터가 맞는지 확인
+		// enctype이 multipart/form-data가 맞는지 확인
+		boolean isMultipart = false;
+		isMultipart = ServletFileUpload.isMultipartContent(req);
+
+		// 1-1 multipart/form-data 인코딩으로 전송되지 않았을 경우
+		if (!isMultipart) {
+			return;
+		}
+
+		// 1-2 여기 이후는 multipart/form-data로 전송된 상황
+		// 파일이 전송된 상황
+
+		// 2. 업로드된 파일을 처리하는 아이템팩토리 객체 생성
+		// ItemFactory : 업로드된 파일을 처리하는 방식을 정하는 클래스
+
+		// FileItem : 클라이언트로부터 전송된 데이터를 객체화시킨 것
+
+		// DiskFileItemFactory class - > 디스크기반(HDD)의 파일 아이템 처리 API
+		// 업로드된 파일을 디스크에 임시 저장하고 후처리한다.
+		DiskFileItemFactory factory = null;
+		// 생성자로 필요한 객체를 넘겨줄 수 있지만 따로 설정
+		factory = new DiskFileItemFactory();
+
+		// 3. 업로드된 아이템이 용량이 작으면 메모리에서 처리
+		int maxMem = 1 * 1024 * 1024; // 1MB
+		factory.setSizeThreshold(maxMem);
+
+		// 4. 용량이 적당히 크면 임시파일을 만들어서 처리 (디스크)
+		ServletContext context = req.getServletContext();
+		// 가상경로인 매개변수를 실제 경로로 만들어준다.
+		String path = context.getRealPath("tmp");
+		File repository = new File(path);
+		factory.setRepository(repository);
+
+		// 5. 업로드 허용 용량 기준을 넘지 않을 경우에만 업로드 처리
+		int maxFile = 10 * 1024 * 1024; // 10MB
+		// 파일 업로드 객체 생성 - DiskFileItemFactory 이용
+		ServletFileUpload upload = null;
+		upload = new ServletFileUpload(factory);
+		// 파일 업로드 용량 제한 설정 : 10MB
+		upload.setFileSizeMax(maxFile);
+
+		// --- 파일 업로드 준비 완료 ---
+
+		// 6. 업로드된 데이터 추출(파싱)
+		// 임시 파일 업로드도 같이 수행함
+		List<FileItem> items = null;
+
+		try {
+			items = upload.parseRequest(req);
+		} catch (FileUploadException e) {
+			e.printStackTrace();
+		}
+
+		// 7. 파싱된 데이터 처리하기
+		// items 리스트에 요청 파라미터가 파싱되어있음
+
+		// 요청정보의 형태 3가지
+		// 1. 빈 파일 (용량이 0인 파일)
+		// 2. form-data (일반적인 요청 파라미터)
+		// 3. 파일
+
+		Iterator<FileItem> iter = items.iterator();
+		
+		Board board = new Board();
+
+		// 모든 요청 정보 처리
+		while (iter.hasNext()) {
+			FileItem item = iter.next();
+
+			// 1) 빈 파일 처리
+			if (item.getSize() <= 0)
+				continue;
+
+			// 빈 파일이 아닌 경우의 코드
+			// 2) 일반적인 요청 데이터 처리
+			if (item.isFormField()) { // 파일 처리 if 시작
+				// form-data일 경우
+				// key : value 쌍으로 전달된 요청 파라미터
+
+				// key - getFieldName()
+				// value - getString()
+
+				// 기본 처리 방식
+				// key 값에 따라 처리방식 다르게 하기
+				String key = item.getFieldName();
+				if ("title".equals(key)) { // 파라미터 key 구분 if 시작
+					try {
+						// item.getString의 매개변수로 인코딩 방식을 주면
+						// exception 처리 해야한다.
+						board.setTitle(item.getString("UTF-8"));
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
+
+				} else if ("content".equals(key)) {
+					try {
+						board.setContent(item.getString("UTF-8"));
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
+
+				} else if ("userid".equals(key)) {
+					try {
+						board.setId(item.getString("UTF-8"));
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}
+				}
+				
+
+				
+			} else {
+				// 3) 파일 처리
+				// 업로드 파일 처리 방법 2가지
+				// 1. 웹 서버의 로컬 디스크에 저장
+				// 파일의 정보는 DB에 기록
+				// 2. DB의 테이블 컬럼으로 저장 (컬럼 데이터타입 BLOB로 사용)
+
+				// 로컬파일로 저장하고 DB에 기록하는 방식으로 진행
+				// --- UUID 생성 ---
+				UUID uuid = UUID.randomUUID(); // 랜덤 UID 생성
+
+				String u = uuid.toString().split("-")[4];
+				// ---------------------------------------
+
+				// 로컬 파일 저장소에 파일 저장하기
+
+				// 로컬 저장소 파일 객체
+				File up = new File(context.getRealPath("upload"), item.getName() + "_" + u);
+				// 파일의 경로는 /upload
+				// 파일의 이름은 "원본명_uid"
+
+				// --- DB에 업로드 정보 기록하기 (DB에 넣고 다운하냐 다운하고 DB에 넣냐)
+				// 파일번호 fileno
+				// 원본파일명 originname
+				// 저장파일명 storedname
+				board.setBoardno(boardDao.selectBoardno());
+				
+				boardDao.insert(board);
+				
+				BoardFile boardFile = new BoardFile();
+				boardFile.setOriginname(item.getName());
+				boardFile.setStoredname(item.getName() + "_" + u);
+				boardFile.setBoardno(board.getBoardno());
+				boardFile.setFilesize((int) item.getSize());
+
+				// DAO를 통해 DB에 INSERT
+				boardDao.insertFile(boardFile);
+				// -----------------------------
+
+				// --- 처리가 완료된 파일 업로드 하기 ---
+				// 로컬 저장소에 실제 저장
+				try {
+					item.write(up);
+					item.delete(); // 임시 파일 삭제
+				} catch (Exception e) {
+					e.printStackTrace();
+				} // 실제 업로드
+
+			} // 파일 처리 if 끝
+
+		} // 요청 파라미터 처리 while
+
+	}
+
+	/*
+	 * @Override public void write(HttpServletRequest req) { // -- 매개변수 준비 -- // 1.
+	 * 요청 객체 - req // 2. 파일 저장 위치 - 서버 real path를 이용 ServletContext context =
+	 * req.getServletContext(); String saveDirectory =
+	 * context.getRealPath("upload"); // 3. 업로드 제한 사이즈 int maxPostSize = 10 * 1024 *
+	 * 1024; // 10MB // 4. 인코딩 String encoding = "UTF-8"; // 5. 중복 파일 이름 정책
+	 * FileRenamePolicy policy = new DefaultFileRenamePolicy(); //
+	 * -------------------
+	 * 
+	 * // --- COS 파일 업로드 객체 생성 --- MultipartRequest mul = null; try { mul = new
+	 * MultipartRequest(req, saveDirectory, maxPostSize, encoding, policy); } catch
+	 * (IOException e) { e.printStackTrace(); } // ---------------------------------
+	 * if (mul != null) { BoardFile file = new BoardFile();
+	 * 
+	 * Board board = new Board();
+	 * 
+	 * board.setTitle(mul.getParameter("title"));
+	 * board.setContent(mul.getParameter("content"));
+	 * board.setId(mul.getParameter("userid"));
+	 * board.setBoardno(boardDao.selectBoardno());
+	 * 
+	 * boardDao.insert(board);
+	 * 
+	 * file.setBoardno(board.getBoardno());
+	 * 
+	 * if (mul.getFile("upfile") != null) {
+	 * file.setOriginname(mul.getOriginalFileName("upfile"));
+	 * file.setStoredname(mul.getFilesystemName("upfile")); file.setFilesize((int)
+	 * mul.getFile("upfile").length()); }
+	 * 
+	 * boardDao.insertFile(file); }
+	 * 
+	 * }
+	 */
+
+	@Override
+	public BoardFile getFile(Board board) {
+		return boardDao.selectFile(board);
+	}
+
+	@Override
+	public BoardFile getFile(BoardFile boardFile) {
+		return boardDao.selectFile(boardFile);
+	}
 
 }

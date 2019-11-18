@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<div class="text-center">
+<div class="col-md-3"></div>
+<div class="text-center col-md-6">
   <ul class="pagination">
 	<!-- 처음으로 가기 -->
    	<c:if test="${paging.curPage ne 1 }">
@@ -79,3 +79,6 @@
    	</c:if>
   </ul>
 </div>
+  <div class="col-md-3 text-right" style="margin: 20px 0;">
+	  <a class="btn btn-success" href="/board/write" role="button">글작성</a>
+  </div>

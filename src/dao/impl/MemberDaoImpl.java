@@ -117,8 +117,6 @@ public class MemberDaoImpl implements MemberDao {
 			e.printStackTrace();
 		} finally {
 			try {
-				if (rs != null)
-					rs.close();
 				if (ps != null)
 					ps.close();
 			} catch (SQLException e) {

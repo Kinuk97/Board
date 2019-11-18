@@ -10,6 +10,7 @@ import java.util.List;
 import dao.face.BoardDao;
 import dbutil.DBConn;
 import dto.Board;
+import dto.BoardFile;
 import util.Paging;
 
 public class BoardDaoImpl implements BoardDao {
@@ -177,7 +178,7 @@ public class BoardDaoImpl implements BoardDao {
 		sql += " select boardno, title, id, content, hit, writtendate from board";
 		sql += " order by boardno desc";
 		sql += " )B";
-		sql += " ORDER BY rnum"; 
+		sql += " ORDER BY rnum";
 		sql += " )BOARD";
 		sql += " WHERE rnum BETWEEN ? AND ?";
 
@@ -218,5 +219,174 @@ public class BoardDaoImpl implements BoardDao {
 
 		return list;
 	}
+	
+	@Override
+	public int selectBoardno() {
+		conn = DBConn.getConnection();
+
+		String sql = "SELECT board_seq.nextval boardno FROM dual";
+
+		int boardno = 0;
+
+		try {
+			ps = conn.prepareStatement(sql);
+
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				boardno = rs.getInt("boardno");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return boardno;
+	}
+
+	@Override
+	public void insert(Board board) {
+		conn = DBConn.getConnection();
+
+		String sql = "INSERT INTO board VALUES (?, ?, ?, ?, 0, sysdate)";
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, board.getBoardno());
+			ps.setString(2, board.getTitle());
+			ps.setString(3, board.getId());
+			ps.setString(4, board.getContent());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void insertFile(BoardFile boardFile) {
+		conn = DBConn.getConnection();
+
+		String sql = "INSERT INTO boardfile VALUES (boardfile_seq.nextval, ?, ?, ?, ?, sysdate)";
+
+		try {
+			ps = conn.prepareStatement(sql);
+
+			ps.setInt(1, boardFile.getBoardno());
+			ps.setString(2, boardFile.getOriginname());
+			ps.setString(3, boardFile.getStoredname());
+			ps.setInt(4, boardFile.getFilesize());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Override
+	public BoardFile selectFile(Board board) {
+		conn = DBConn.getConnection();
+
+		String sql = "SELECT * FROM boardfile WHERE boardno = ?";
+		
+		BoardFile file = null;
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, board.getBoardno());
+
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				file = new BoardFile();
+				
+				file.setFileno(rs.getInt("fileno"));
+				file.setBoardno(rs.getInt("boardno"));
+				file.setFilesize(rs.getInt("filesize"));
+				file.setOriginname(rs.getString("originname"));
+				file.setStoredname(rs.getString("storedname"));
+				file.setWritedate(rs.getDate("writedate"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return file;
+	}
+
+	@Override
+	public BoardFile selectFile(BoardFile boardFile) {
+		conn = DBConn.getConnection();
+
+		String sql = "SELECT * FROM boardfile WHERE fileno = ?";
+		
+		BoardFile file = null;
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, boardFile.getFileno());
+
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				file = new BoardFile();
+				
+				file.setFileno(rs.getInt("fileno"));
+				file.setBoardno(rs.getInt("boardno"));
+				file.setFilesize(rs.getInt("filesize"));
+				file.setOriginname(rs.getString("originname"));
+				file.setStoredname(rs.getString("storedname"));
+				file.setWritedate(rs.getDate("writedate"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return file;
+	}
+
 
 }
