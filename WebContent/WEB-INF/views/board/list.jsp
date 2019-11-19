@@ -36,7 +36,8 @@ $(document).ready(function() {
 		<table class="table table-hover table-condensed">
 			<thead>
 				<tr>
-					<td class="col-md-1">게시글번호</td>
+					<td class="col
+					-md-1">게시글번호</td>
 					<td class="col-md-6" style="text-align: center;">제목</td>
 					<td class="col-md-2">작성자</td>
 					<td class="col-md-1">조회수</td>

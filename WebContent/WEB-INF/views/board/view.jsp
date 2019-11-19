@@ -32,14 +32,14 @@
 		</tr>
 		<tr>
 			<td colspan="3">
-<%-- 				<c:if test="${file.fileno}"> --%>
+				<c:if test="${!empty file.fileno}">
 					<a href="/board/file?fileno=${file.fileno }">${file.originname } (용량 : ${file.filesize })</a>
-<%-- 				</c:if> --%>
+				</c:if>
 			</td>
 			<td colspan="2" style="text-align: right">
 				<a class="btn btn-default" href="/board/list" role="button">목록</a>
-				<a class="btn btn-default" href="#" role="button">삭제</a>
-				<a class="btn btn-default" href="#" role="button">수정</a>
+				<a class="btn btn-default" href="/board/delete?boardno=${board.boardno }" role="button">삭제</a>
+				<a class="btn btn-default" href="/board/update?boardno=${board.boardno }" role="button">수정</a>
 			</td>
 		</tr>
 	</table>

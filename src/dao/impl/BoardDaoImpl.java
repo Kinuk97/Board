@@ -17,8 +17,10 @@ public class BoardDaoImpl implements BoardDao {
 	private Connection conn = null;
 	private PreparedStatement ps = null;
 	private ResultSet rs = null;
+	
 
 	private BoardDaoImpl() {
+		conn = DBConn.getConnection();
 	}
 
 	private static class Singleton {
@@ -31,8 +33,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public List<Board> selectAll() {
-		conn = DBConn.getConnection();
-
 		String sql = "SELECT * FROM board ORDER BY boardno DESC";
 
 		List<Board> list = new ArrayList<Board>();
@@ -72,8 +72,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public Board selectBoardByBoardno(Board board) {
-		conn = DBConn.getConnection();
-
 		String sql = "SELECT * FROM board WHERE boardno = ?";
 
 		Board resultBoard = null;
@@ -113,8 +111,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public void updateHit(Board board) {
-		conn = DBConn.getConnection();
-
 		String sql = "UPDATE board SET hit = hit + 1 WHERE boardno = ?";
 		try {
 			ps = conn.prepareStatement(sql);
@@ -138,8 +134,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public int selectCntAll() {
-		conn = DBConn.getConnection();
-
 		String sql = "SELECT count(*) cnt FROM board";
 
 		int totalCount = 0;
@@ -170,8 +164,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public List<Board> selectAll(Paging paging) {
-		conn = DBConn.getConnection();
-
 		String sql = "";
 		sql += "select * from(";
 		sql += " select rownum rnum, B.* FROM(";
@@ -222,8 +214,6 @@ public class BoardDaoImpl implements BoardDao {
 	
 	@Override
 	public int selectBoardno() {
-		conn = DBConn.getConnection();
-
 		String sql = "SELECT board_seq.nextval boardno FROM dual";
 
 		int boardno = 0;
@@ -254,8 +244,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public void insert(Board board) {
-		conn = DBConn.getConnection();
-
 		String sql = "INSERT INTO board VALUES (?, ?, ?, ?, 0, sysdate)";
 
 		try {
@@ -281,8 +269,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public void insertFile(BoardFile boardFile) {
-		conn = DBConn.getConnection();
-
 		String sql = "INSERT INTO boardfile VALUES (boardfile_seq.nextval, ?, ?, ?, ?, sysdate)";
 
 		try {
@@ -308,8 +294,6 @@ public class BoardDaoImpl implements BoardDao {
 	
 	@Override
 	public BoardFile selectFile(Board board) {
-		conn = DBConn.getConnection();
-
 		String sql = "SELECT * FROM boardfile WHERE boardno = ?";
 		
 		BoardFile file = null;
@@ -349,8 +333,6 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public BoardFile selectFile(BoardFile boardFile) {
-		conn = DBConn.getConnection();
-
 		String sql = "SELECT * FROM boardfile WHERE fileno = ?";
 		
 		BoardFile file = null;
@@ -386,6 +368,61 @@ public class BoardDaoImpl implements BoardDao {
 		}
 
 		return file;
+	}
+
+	@Override
+	public void update(Board board) {
+		String sql = "UPDATE board SET title = ?, content = ? WHERE boardno = ?";
+
+		try {
+			ps = conn.prepareStatement(sql);
+
+			ps.setString(1, board.getTitle());
+			ps.setString(2, board.getContent());
+			ps.setInt(3, board.getBoardno());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Override
+	public void delete(Board board) {
+		String sql = "DELETE FROM board WHERE boardno = ?";
+		
+		try {
+			ps = conn.prepareStatement(sql);
+
+			ps.setInt(1, board.getBoardno());
+
+			ps.executeUpdate();
+			
+			sql = "DELETE FROM boardFile WHERE boardno = ?";
+			
+			ps.setInt(1, board.getBoardno());
+			
+			ps = conn.prepareStatement(sql);
+			
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 

@@ -1,6 +1,7 @@
 package service.face;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,11 +39,13 @@ public interface BoardService {
 	public Board view(Board board);
 	
 	
-	public void write(Board board);
+//	public void write(Board board);
 //	public void write(HttpServletRequest req);
 	public void write(HttpServletRequest req);
 	
-	
 	public BoardFile getFile(Board board);
 	public BoardFile getFile(BoardFile boardFile);
+
+	public void update(HttpServletRequest req);
+
 }

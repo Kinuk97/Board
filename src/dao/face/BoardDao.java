@@ -35,4 +35,8 @@ public interface BoardDao {
 	
 	public BoardFile selectFile(Board board);
 	public BoardFile selectFile(BoardFile boardFile);
+	
+//	public Board selectByBoardno(Board board);
+	public void update(Board board);
+	public void delete(Board board);
 }
