@@ -5,6 +5,54 @@
 
 <%@ include file="/WEB-INF/views/layout/header.jsp" %>
 
+<script type="text/javascript">
+$(document).ready(function() {
+	var recommend = "<button class=\"btn btn-default\" role=\"button\" id=\"recommendBtn\"></button>"
+	
+	$("#menuTd").prepend($(recommend));
+	
+	$.ajax({
+		type : "GET",
+		url : "/board/recommend",
+		data : { "boardno" : $("#boardno").val() },
+		dataType : "text",
+		success : function(data) {
+			var result = JSON.parse(data);
+			
+			if (result.check) {
+				$("#recommendBtn").text("추천 취소하기 : " + result.cnt);
+			} else {
+				$("#recommendBtn").text("추천하기 : " + result.cnt);
+			}
+		},
+		error : function(e) {
+			console.log(e);
+		}
+	});
+	
+	$("#recommendBtn").on("click", function() {
+		$.ajax({
+			type : "GET",
+			url : "/board/recommend",
+			data : { "boardno" : $("#boardno").val() },
+			dataType : "text",
+			success : function(data) {
+				var result = JSON.parse(data);
+				
+				if (result.check) {
+					$("#recommendBtn").text("추천 취소하 기 : " + result.cnt);
+				} else {
+					$("#recommendBtn").text("추천하기 : " + result.cnt);
+				}
+			},
+			error : function(e) {
+				console.log(e);
+			}
+		});
+	});
+});
+</script>
+
 <div class="container">
 	<h1 class="text-center">게시글 디테일</h1>
 	<hr>
@@ -36,13 +84,18 @@
 					<a href="/board/file?fileno=${file.fileno }">${file.originname } (용량 : ${file.filesize })</a>
 				</c:if>
 			</td>
-			<td colspan="2" style="text-align: right">
+			<td colspan="2" style="text-align: right" id="menuTd">
+<!-- 				<button class="btn btn-default" role="button" id="recommendBtn">추천 : </button> -->
 				<a class="btn btn-default" href="/board/list" role="button">목록</a>
-				<a class="btn btn-default" href="/board/delete?boardno=${board.boardno }" role="button">삭제</a>
-				<a class="btn btn-default" href="/board/update?boardno=${board.boardno }" role="button">수정</a>
+				<c:if test="${board.id == userid }">
+					<a class="btn btn-default" href="/board/delete?boardno=${board.boardno }" role="button">삭제</a>
+					<a class="btn btn-default" href="/board/update?boardno=${board.boardno }" role="button">수정</a>
+				</c:if>
 			</td>
 		</tr>
 	</table>
 </div>
+
+<input type="hidden" value="${board.boardno }" id="boardno">
 
 <%@ include file="/WEB-INF/views/layout/footer.jsp" %>

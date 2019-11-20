@@ -47,5 +47,13 @@ public interface BoardService {
 	public BoardFile getFile(BoardFile boardFile);
 
 	public void update(HttpServletRequest req);
-
+	
+	public void delete(Board board, HttpServletRequest req);
+	
+	
+	public void recommend(Board recommendBoard);
+	public void unRecommend(Board recommendBoard);
+	
+	public boolean checkRecommend(Board recommendBoard);
+	public int cntRecommend(Board recommendBoard);
 }

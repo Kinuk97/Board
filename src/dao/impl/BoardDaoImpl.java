@@ -395,6 +395,31 @@ public class BoardDaoImpl implements BoardDao {
 	}
 	
 	@Override
+	public void update(BoardFile boardFile) {
+		String sql = "UPDATE boardfile SET originname = ?, storedname = ?, filesize = ? WHERE fileno = ?";
+
+		try {
+			ps = conn.prepareStatement(sql);
+
+			ps.setString(1, boardFile.getOriginname());
+			ps.setString(2, boardFile.getStoredname());
+			ps.setInt(3, boardFile.getFilesize());
+			ps.setInt(4, boardFile.getFileno());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@Override
 	public void delete(Board board) {
 		String sql = "DELETE FROM board WHERE boardno = ?";
 		
@@ -403,14 +428,6 @@ public class BoardDaoImpl implements BoardDao {
 
 			ps.setInt(1, board.getBoardno());
 
-			ps.executeUpdate();
-			
-			sql = "DELETE FROM boardFile WHERE boardno = ?";
-			
-			ps.setInt(1, board.getBoardno());
-			
-			ps = conn.prepareStatement(sql);
-			
 			ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -424,6 +441,138 @@ public class BoardDaoImpl implements BoardDao {
 		}
 		
 	}
+	
+	@Override
+	public void delete(BoardFile boardFile) {
+		String sql = "DELETE FROM boardFile WHERE boardno = ?";
+		
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, boardFile.getBoardno());
+			
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
+	@Override
+	public int cntRecommend(Board board) {
+		String sql = "SELECT count(*) cnt FROM recommend WHERE boardno = ?";
+
+		int totalCount = 0;
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, board.getBoardno());
+
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				totalCount = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return totalCount;
+	}
+	
+	@Override
+	public int cntMyRecommend(Board board) {
+		String sql = "SELECT count(*) cnt FROM recommend WHERE boardno = ? AND userid = ?";
+
+		int totalCount = 0;
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, board.getBoardno());
+			ps.setString(2, board.getId());
+
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				totalCount = rs.getInt("cnt");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return totalCount;
+	}
+
+	@Override
+	public void insertRecommend(Board board) {
+		String sql = "INSERT INTO recommend VALUES (?, ?)";
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setString(1, board.getId());
+			ps.setInt(2, board.getBoardno());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void deleteRecommend(Board board) {
+		String sql = "DELETE FROM recommend WHERE boardno = ? AND userid = ?";
+
+		try {
+			ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, board.getBoardno());
+			ps.setString(2, board.getId());
+
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (ps != null)
+					ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 }

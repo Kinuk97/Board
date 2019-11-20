@@ -38,5 +38,14 @@ public interface BoardDao {
 	
 //	public Board selectByBoardno(Board board);
 	public void update(Board board);
+	public void update(BoardFile boardFile);
+	
 	public void delete(Board board);
+	public void delete(BoardFile boardFile);
+	
+	public void insertRecommend(Board board);
+	public void deleteRecommend(Board board);
+	
+	public int cntRecommend(Board board);
+	public int cntMyRecommend(Board board);
 }

@@ -11,29 +11,17 @@ import dto.Board;
 import service.face.BoardService;
 import service.impl.BoardServiceImpl;
 
-/**
- * Servlet implementation class BoardUpdateController
- */
-@WebServlet("/board/update")
-public class BoardUpdateController extends HttpServlet {
+@WebServlet("/board/delete")
+public class BoardDeleteController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
+       
 	private BoardService boardService = BoardServiceImpl.getInstance();
 	
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Board board = boardService.getBoardno(request);
 		
-		request.setAttribute("board", boardService.view(board));
-		request.setAttribute("file", boardService.getFile(board));
-		
-		request.getRequestDispatcher("/WEB-INF/views/board/update.jsp").forward(request, response);
-		
-	}
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
-		
-		boardService.update(request);
+		boardService.delete(board, request);
 		
 		response.sendRedirect("/board/list");
 	}
