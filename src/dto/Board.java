@@ -7,14 +7,9 @@ public class Board {
 	private String title;
 	private String id;
 	private String content;
+	private int recommend;
 	private int hit;
 	private Date writtendate;
-
-	@Override
-	public String toString() {
-		return "Board [boardno=" + boardno + ", title=" + title + ", id=" + id + ", content=" + content + ", hit=" + hit
-				+ ", writtendate=" + writtendate + "]";
-	}
 
 	public int getBoardno() {
 		return boardno;
@@ -48,6 +43,14 @@ public class Board {
 		this.content = content;
 	}
 
+	public int getRecommend() {
+		return recommend;
+	}
+
+	public void setRecommend(int recommend) {
+		this.recommend = recommend;
+	}
+
 	public int getHit() {
 		return hit;
 	}
@@ -62,6 +65,12 @@ public class Board {
 
 	public void setWrittendate(Date writtendate) {
 		this.writtendate = writtendate;
+	}
+
+	@Override
+	public String toString() {
+		return "Board [boardno=" + boardno + ", title=" + title + ", id=" + id + ", content=" + content + ", recommend="
+				+ recommend + ", hit=" + hit + ", writtendate=" + writtendate + "]";
 	}
 
 }

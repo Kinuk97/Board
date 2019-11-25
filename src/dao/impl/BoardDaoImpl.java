@@ -11,6 +11,7 @@ import dao.face.BoardDao;
 import dbutil.DBConn;
 import dto.Board;
 import dto.BoardFile;
+import dto.Comment;
 import util.Paging;
 
 public class BoardDaoImpl implements BoardDao {
@@ -72,7 +73,7 @@ public class BoardDaoImpl implements BoardDao {
 
 	@Override
 	public Board selectBoardByBoardno(Board board) {
-		String sql = "SELECT * FROM board WHERE boardno = ?";
+		String sql = "SELECT boardno, title, id, content, hit, writtendate, (SELECT COUNT(*) FROM recommend WHERE boardno = board.boardno) recommend FROM board WHERE boardno = ?";
 
 		Board resultBoard = null;
 
@@ -92,6 +93,7 @@ public class BoardDaoImpl implements BoardDao {
 				resultBoard.setContent(rs.getString("content"));
 				resultBoard.setHit(rs.getInt("hit"));
 				resultBoard.setWrittendate(rs.getDate("writtendate"));
+				resultBoard.setRecommend(rs.getInt("recommend"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -133,13 +135,22 @@ public class BoardDaoImpl implements BoardDao {
 	}
 
 	@Override
-	public int selectCntAll() {
+	public int selectCntAll(String search) {
 		String sql = "SELECT count(*) cnt FROM board";
+		
+		if (search != null) {
+			sql += " WHERE title LIKE ? OR content LIKE ?";
+		}
 
 		int totalCount = 0;
 
 		try {
 			ps = conn.prepareStatement(sql);
+			
+			if (search != null) {
+				ps.setString(1, "%" + search + "%");
+				ps.setString(2, "%" + search + "%");
+			}
 
 			rs = ps.executeQuery();
 
@@ -165,13 +176,18 @@ public class BoardDaoImpl implements BoardDao {
 	@Override
 	public List<Board> selectAll(Paging paging) {
 		String sql = "";
-		sql += "select * from(";
+		sql += "select boardno, title, id, content, hit, writtendate, (SELECT COUNT(*) FROM recommend WHERE boardno = board.boardno) recommend from(";
 		sql += " select rownum rnum, B.* FROM(";
 		sql += " select boardno, title, id, content, hit, writtendate from board";
+		
+		if (paging.getSearch() != null) {
+			sql += " WHERE title LIKE ? OR content LIKE ?";
+		}
+		
 		sql += " order by boardno desc";
-		sql += " )B";
+		sql += " ) B";
 		sql += " ORDER BY rnum";
-		sql += " )BOARD";
+		sql += " ) BOARD";
 		sql += " WHERE rnum BETWEEN ? AND ?";
 
 		List<Board> list = new ArrayList<Board>();
@@ -179,8 +195,15 @@ public class BoardDaoImpl implements BoardDao {
 		try {
 			ps = conn.prepareStatement(sql);
 
-			ps.setInt(1, paging.getStartNo());
-			ps.setInt(2, paging.getEndNo());
+			if (paging.getSearch() != null) {
+				ps.setString(1, "%" + paging.getSearch() + "%");
+				ps.setString(2, "%" + paging.getSearch() + "%");
+				ps.setInt(3, paging.getStartNo());
+				ps.setInt(4, paging.getEndNo());
+			} else {
+				ps.setInt(1, paging.getStartNo());
+				ps.setInt(2, paging.getEndNo());
+			}
 
 			rs = ps.executeQuery();
 
@@ -193,6 +216,7 @@ public class BoardDaoImpl implements BoardDao {
 				board.setContent(rs.getString("content"));
 				board.setHit(rs.getInt("hit"));
 				board.setWrittendate(rs.getDate("writtendate"));
+				board.setRecommend(rs.getInt("recommend"));
 
 				list.add(board);
 			}
@@ -574,5 +598,5 @@ public class BoardDaoImpl implements BoardDao {
 			}
 		}
 	}
-
+	
 }

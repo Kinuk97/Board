@@ -20,14 +20,18 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import dao.face.BoardDao;
+import dao.face.CommentDao;
 import dao.impl.BoardDaoImpl;
+import dao.impl.CommentDaoImpl;
 import dto.Board;
 import dto.BoardFile;
+import dto.Comment;
 import service.face.BoardService;
 import util.Paging;
 
 public class BoardServiceImpl implements BoardService {
 	private BoardDao boardDao = BoardDaoImpl.getInstance();
+	private CommentDao commentDao = CommentDaoImpl.getInstance();
 
 	private BoardServiceImpl() {
 	}
@@ -66,12 +70,20 @@ public class BoardServiceImpl implements BoardService {
 		if (param != null && !"".equals(param)) {
 			curPage = Integer.parseInt(param);
 		}
+		
+		param = req.getParameter("search");
+		String search = null;
+		if (param != null && !"".equals(param)) {
+			search = param;
+		}
 
 		// Board TB와 curPage 값을 이용한 Paging 객체를 생성하고 반환
-		int totalCount = boardDao.selectCntAll();
-
+		int totalCount = boardDao.selectCntAll(search);
+		
 		// Paging 객체 생성
 		Paging paging = new Paging(totalCount, curPage);
+		
+		paging.setSearch(search);
 
 		return paging;
 	}
@@ -448,18 +460,21 @@ public class BoardServiceImpl implements BoardService {
 
 	@Override
 	public void delete(Board board, HttpServletRequest req) {
+		
 		BoardFile boardFile = boardDao.selectFile(board);
-		BoardFile prevFile = boardDao.selectFile(boardFile);
 
-		boardDao.delete(boardFile);
+		if (boardFile != null) {
+			boardDao.delete(boardFile);
+			
+			String path = req.getServletContext().getRealPath("upload"); // 경로
+			String filename = boardFile.getStoredname(); // 파일이름
+			
+			File file = new File(path, filename);
+			
+			file.delete();
+		}
+		
 		boardDao.delete(board);
-
-		String path = req.getServletContext().getRealPath("upload"); // 경로
-		String filename = prevFile.getStoredname(); // 파일이름
-
-		File file = new File(path, filename);
-
-		file.delete();
 	}
 
 	@Override
@@ -476,18 +491,33 @@ public class BoardServiceImpl implements BoardService {
 	
 	@Override
 	public int cntRecommend(Board recommendBoard) {
-		return boardDao.cntMyRecommend(recommendBoard);
+		return boardDao.cntRecommend(recommendBoard);
 	}
 
 	@Override
 	public boolean checkRecommend(Board recommendBoard) {
 		int myRecomm = boardDao.cntMyRecommend(recommendBoard);
 
-		if (myRecomm == 1) {
+		if (myRecomm > 0) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
+	@Override
+	public List<Comment> commentList(Board board) {
+		return commentDao.selectCommentByBoardNo(board);
+	}
+
+	@Override
+	public void commentInsert(Comment comment) {
+		commentDao.insertComment(comment);
+	}
+	
+	@Override
+	public void commentDelete(Comment comment) {
+		commentDao.deleteComment(comment);
+	}
+	
 }

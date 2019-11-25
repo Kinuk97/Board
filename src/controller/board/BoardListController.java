@@ -25,8 +25,8 @@ public class BoardListController extends HttpServlet {
 		
 		// Paging 객체를 MODEL 값으로 지정
 		req.setAttribute("paging", paging);
-		
 		req.setAttribute("boardList", boardService.getList(paging));
+		req.setAttribute("search", paging.getSearch());
 		
 		req.getRequestDispatcher("/WEB-INF/views/board/list.jsp").forward(req, resp);
 	}

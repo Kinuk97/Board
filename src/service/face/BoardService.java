@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import dto.Board;
 import dto.BoardFile;
+import dto.Comment;
 import util.Paging;
 
 public interface BoardService {
@@ -56,4 +57,8 @@ public interface BoardService {
 	
 	public boolean checkRecommend(Board recommendBoard);
 	public int cntRecommend(Board recommendBoard);
+
+	public List<Comment> commentList(Board board);
+	public void commentInsert(Comment comment);
+	public void commentDelete(Comment comment);
 }

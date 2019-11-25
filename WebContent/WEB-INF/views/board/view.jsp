@@ -7,30 +7,7 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-	var recommend = "<button class=\"btn btn-default\" role=\"button\" id=\"recommendBtn\"></button>"
-	
-	$("#menuTd").prepend($(recommend));
-	
-	$.ajax({
-		type : "GET",
-		url : "/board/recommend",
-		data : { "boardno" : $("#boardno").val() },
-		dataType : "text",
-		success : function(data) {
-			var result = JSON.parse(data);
-			
-			if (result.check) {
-				$("#recommendBtn").text("추천 취소하기 : " + result.cnt);
-			} else {
-				$("#recommendBtn").text("추천하기 : " + result.cnt);
-			}
-		},
-		error : function(e) {
-			console.log(e);
-		}
-	});
-	
-	$("#recommendBtn").on("click", function() {
+	$("#btnSpan").on("click", "button#recommendBtn",function() {
 		$.ajax({
 			type : "GET",
 			url : "/board/recommend",
@@ -38,17 +15,45 @@ $(document).ready(function() {
 			dataType : "text",
 			success : function(data) {
 				var result = JSON.parse(data);
-				
+			
 				if (result.check) {
-					$("#recommendBtn").text("추천 취소하 기 : " + result.cnt);
-				} else {
-					$("#recommendBtn").text("추천하기 : " + result.cnt);
+					$("#recommendBtn").text("추천취소");
+					$("#recommendBtn").attr("id", "unrecommendBtn");
+					// show() hide()
 				}
+				
+				$("#cntRecommend").text(result.cnt);
 			},
 			error : function(e) {
 				console.log(e);
 			}
 		});
+	});
+	
+	$("#btnSpan").on("click", "button#unrecommendBtn", function() {
+		$.ajax({
+			type : "GET",
+			url : "/board/unrecommend",
+			data : { "boardno" : $("#boardno").val() },
+			dataType : "text",
+			success : function(data) {
+				var result = JSON.parse(data);
+				if (!result.check) {
+					$("#unrecommendBtn").text("추천하기");
+					$("#unrecommendBtn").attr("id", "recommendBtn");
+					// show() hide()
+				}
+				
+				$("#cntRecommend").text(result.cnt);
+			},
+			error : function(e) {
+				console.log(e);
+			}
+		});
+	});
+	
+	$("#btnSpan").on("click", "button#nologinBtn", function() {
+		alert("로그인을 해주세요~");
 	});
 });
 </script>
@@ -85,7 +90,29 @@ $(document).ready(function() {
 				</c:if>
 			</td>
 			<td colspan="2" style="text-align: right" id="menuTd">
-<!-- 				<button class="btn btn-default" role="button" id="recommendBtn">추천 : </button> -->
+				<div style="display: inline-block; height: fit-content; margin: 0 5px; border: 1px solid #CCC;
+				border-bottom-left-radius: 5px; border-top-left-radius: 5px;">
+					<span id="btnSpan">
+					<c:choose>
+						<c:when test="${!empty check && !check }">
+							<button class="btn btn-primary" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" id="recommendBtn">
+								추천하기
+							</button>
+						</c:when>
+						<c:when test="${check }">
+							<button class="btn btn-primary" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" id="unrecommendBtn">
+								추천취소
+							</button>
+						</c:when>
+						<c:when test="${empty check }">
+							<button class="btn btn-primary" style="border-top-right-radius: 0; border-bottom-right-radius: 0;" id="nologinBtn">
+								추천하기
+							</button>
+						</c:when>
+					</c:choose>
+					</span>
+					<b style="padding-right: 10px; padding-left: 8px;" id="cntRecommend">${board.recommend }</b>
+				</div>
 				<a class="btn btn-default" href="/board/list" role="button">목록</a>
 				<c:if test="${board.id == userid }">
 					<a class="btn btn-default" href="/board/delete?boardno=${board.boardno }" role="button">삭제</a>
@@ -93,6 +120,26 @@ $(document).ready(function() {
 				</c:if>
 			</td>
 		</tr>
+		<tr>
+			<td colspan="5">
+				<form action="/comment/insert" method="get">
+					<textarea class="form-control" style="resize: none; width: 95%; display: inline; float: left;" name="content" required="required"></textarea>
+					<button class="btn" style="height: 54px; width: 5%; padding: 0;">작성</button>
+					<input type="hidden" value="${board.boardno }" name="boardno">
+				</form>
+			</td>
+		</tr>
+		<c:forEach items="${comment }" var="com">
+			<tr>
+				<td>작성자 : ${com.userid }</td>
+				<td colspan="4">
+					<div style="height: 54px;" class="col-md-11 col-sm-11">${com.content }</div>
+					<div class="col-md-1 col-sm-1 text-right">
+						<a class="btn btn-info" href="/comment/delete?commentno=${com.commentno }&boardno=${board.boardno}">삭제</a>
+					</div>
+				</td>
+			</tr>
+		</c:forEach>
 	</table>
 </div>
 

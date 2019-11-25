@@ -1,4 +1,4 @@
-package controller.board;
+package controller.comment;
 
 import java.io.IOException;
 
@@ -8,31 +8,35 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import dto.Board;
+import dto.Comment;
 import service.face.BoardService;
 import service.impl.BoardServiceImpl;
 
-@WebServlet("/board/view")
-public class BoardViewController extends HttpServlet {
+/**
+ * Servlet implementation class CommentDeleteController
+ */
+@WebServlet("/comment/delete")
+public class CommentDeleteController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
+
 	private BoardService boardService = BoardServiceImpl.getInstance();
-	
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Board board = boardService.getBoardno(req);
+		Comment comment = new Comment();
 		
-		Object param = req.getSession().getAttribute("userid");
-		
+		String param = req.getParameter("commentno");
 		if (param != null) {
-			board.setId((String) param);
-			req.setAttribute("check", boardService.checkRecommend(board));
+			comment.setCommentno(Integer.parseInt(param));
 		}
 		
-		req.setAttribute("board", boardService.view(board));
-		req.setAttribute("file", boardService.getFile(board));
-		req.setAttribute("comment", boardService.commentList(board));
+		param = req.getParameter("boardno");
+		if (param != null) {
+			comment.setBoardno(Integer.parseInt(param));
+		}
 		
-		req.getRequestDispatcher("/WEB-INF/views/board/view.jsp").forward(req, resp);
+		boardService.commentDelete(comment);
+		
+		resp.sendRedirect("/board/view?boardno=" + comment.getBoardno());
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import dto.Board;
 import dto.BoardFile;
+import dto.Comment;
 import util.Paging;
 
 public interface BoardDao {
@@ -25,7 +26,7 @@ public interface BoardDao {
 	 * 총 게시글 수 조회
 	 * @return - 총 게시글 수
 	 */
-	public int selectCntAll();
+	public int selectCntAll(String search);
 	
 	public int selectBoardno();
 	
@@ -48,4 +49,5 @@ public interface BoardDao {
 	
 	public int cntRecommend(Board board);
 	public int cntMyRecommend(Board board);
+	
 }
